@@ -1,0 +1,56 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Versionsnummer: bei GitHub-Builds die Laufnummer des Workflows, lokal 1
+def buildNummer = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInteger()
+
+android {
+    namespace 'de.laufkarten.rueckmeldung'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'de.laufkarten.rueckmeldung'
+        minSdk 24
+        targetSdk 34
+        versionCode buildNummer
+        versionName "1.0." + buildNummer
+    }
+
+    signingConfigs {
+        // Fester Schlüssel im Projekt, damit Updates ohne Deinstallation möglich sind.
+        // Nur für die firmeninterne Verteilung gedacht (nicht für den Play Store).
+        intern {
+            storeFile file('laufkarten.keystore')
+            storePassword 'laufkarten'
+            keyAlias 'laufkarten'
+            keyPassword 'laufkarten'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.intern
+        }
+        debug {
+            signingConfig signingConfigs.intern
+        }
+    }
+
+    lint {
+        // Lint-Warnungen sollen den automatischen Build nicht abbrechen
+        abortOnError false
+        checkReleaseBuilds false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // Google Code Scanner (ML Kit): Barcode-Scan über Google Play-Dienste, keine Kamera-Berechtigung nötig
+    implementation 'com.google.android.gms:play-services-code-scanner:16.1.0'
+}
